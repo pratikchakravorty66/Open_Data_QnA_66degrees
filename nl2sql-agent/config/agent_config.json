@@ -1,0 +1,17 @@
+{
+  "project_id": "your-gcp-project-id",
+  "location": "us-central1",
+  "connection": "redshift-demo-connection",
+  "model": "gemini-2.0-flash",
+  "redshift_config": {
+    "database": "demo_db",
+    "schema": "public",
+    "host": "your-redshift-cluster.region.redshift.amazonaws.com",
+    "port": 5439
+  },
+  "demo_settings": {
+    "run_validation_on_startup": true,
+    "verbose_logging": true,
+    "max_retries": 3
+  }
+}
