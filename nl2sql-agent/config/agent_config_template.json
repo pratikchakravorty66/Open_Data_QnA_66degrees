@@ -1,0 +1,45 @@
+{
+  "project_id": "your-gcp-project-id",
+  "location": "us-central1",
+  "connection": "redshift-demo-connection",
+  "model": "gemini-2.0-flash",
+  "service_account_path": "./config/service_account.json",
+  "debug": false,
+  "description": "NL2SQL Agent Configuration for Revolve E-commerce Data Analysis",
+  "business_context": {
+    "company": "Revolve",
+    "data_source": "AWS Redshift",
+    "primary_use_cases": [
+      "Order analysis and AOV calculations",
+      "High-value customer segmentation",
+      "Payment method analysis",
+      "Shipping carrier performance",
+      "Customer sampling for surveys"
+    ]
+  },
+  "validation": {
+    "required_iam_roles": [
+      "roles/integrations.integrationInvoker",
+      "roles/integrations.integrationEditor"
+    ],
+    "required_apis": [
+      "connectors.googleapis.com",
+      "integrations.googleapis.com",
+      "aiplatform.googleapis.com"
+    ]
+  },
+  "redshift_config": {
+    "cluster_region": "us-east-1",
+    "primary_schema": "bi_report",
+    "supporting_schemas": [
+      "mars__revolveclothing_com___db",
+      "mars__id"
+    ]
+  },
+  "deployment": {
+    "environment": "development",
+    "version": "1.0.0",
+    "deployed_by": "ADK",
+    "deployment_date": "2024-01-01"
+  }
+}

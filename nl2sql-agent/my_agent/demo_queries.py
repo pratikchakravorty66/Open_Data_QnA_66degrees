@@ -21,74 +21,84 @@ class DemoQueryRunner:
         
         queries = [
             {
-                "category": "Apparel Sales Analysis",
-                "question": "How many apparels were sold in the last quarter?",
-                "expected_tables": ["sales", "products"],
-                "expected_operations": ["JOIN", "COUNT", "WHERE", "date filtering"],
-                "business_context": "Primary demo query - quarterly apparel sales volume"
+                "category": "Revolve Orders Analysis",
+                "question": "Show me the number of Revolve orders and AOV for the United Kingdom between 8/25/22 - 8/24/23 vs. 8/25/21 - 8/24/22, split by Category",
+                "expected_tables": ["bi_report.shipmentnumber_rs", "mars__revolveclothing_com___db.product", "mars__id.id_categorynames2"],
+                "expected_operations": ["JOIN", "COUNT", "AVG", "CASE", "GROUP BY", "date filtering"],
+                "business_context": "Primary client test case - year-over-year Revolve AOV analysis by category for UK market",
+                "business_rules": ["Use site <> 'F' for Revolve orders", "Use shipmentnumber_rs for product analysis", "Proper category mapping"]
             },
             {
-                "category": "Brand Analysis", 
-                "question": "What are the top 5 selling apparel brands?",
-                "expected_tables": ["sales", "products"],
-                "expected_operations": ["JOIN", "GROUP BY", "SUM", "ORDER BY", "LIMIT"],
-                "business_context": "Brand performance analysis for apparel category"
+                "category": "High Value Customer Analysis",
+                "question": "Get top 10 brands and categories based on projected net sales for top 5% high value customers",
+                "expected_tables": ["bi_report.ordernumber_rs", "bi_report.shipmentnumber_rs", "mars__revolveclothing_com___db.product", "mars__id.id_categorynames2"],
+                "expected_operations": ["CTE", "PERCENT_RANK", "JOIN", "GROUP BY", "ORDER BY", "LIMIT"],
+                "business_context": "High-value customer segmentation and brand performance analysis",
+                "business_rules": ["Use PERCENT_RANK for top 5%", "Use projnetsales_shipped metric", "Proper product code mapping"]
+            },
+            {
+                "category": "Payment Analysis",
+                "question": "Show number of transactions and average monthly gross sales through ANET excluding ApplePay orders",
+                "expected_tables": ["bi_report.ordernumber_rs", "mars__revolveclothing_com___db.orders"],
+                "expected_operations": ["JOIN", "COUNT", "AVG", "GROUP BY", "EXTRACT", "WHERE"],
+                "business_context": "Payment method analysis excluding specific token services",
+                "business_rules": ["Join with orders table for paymenttokenservice", "Filter paymenttype = 'ANET'", "Exclude ApplePay"]
+            },
+            {
+                "category": "Shipping Loss Analysis",
+                "question": "Analyze Ontrac and UPS loss rates by order value, include signature required filter",
+                "expected_tables": ["bi_report.shipmentnumber_rs", "mars__revolveclothing_com___db.orders", "mars__revolveclothing_com___db.shipment", "mars__id.shipping_pickuptime"],
+                "expected_operations": ["JOIN", "CASE", "COUNT", "SUM", "GROUP BY", "calculation"],
+                "business_context": "Shipping carrier performance analysis with loss rate calculations",
+                "business_rules": ["Use 'lost package' not 'lost'", "Use shipping_pickuptime for accurate carrier info", "Include sigrequired"]
+            },
+            {
+                "category": "Customer Survey Sampling",
+                "question": "Get 5K random REVOLVE customers who made purchases in the last 12 months with their last transaction details",
+                "expected_tables": ["bi_report.ordernumber_rs"],
+                "expected_operations": ["ROW_NUMBER", "RANDOM", "ORDER BY", "LIMIT", "date filtering"],
+                "business_context": "Random customer sampling for survey purposes",
+                "business_rules": ["Use RANDOM() for sampling", "Get last transaction per customer", "Site = 'R' for Revolve"]
+            },
+            {
+                "category": "Brand Performance",
+                "question": "What are the top selling brands this quarter by projected net sales?",
+                "expected_tables": ["bi_report.shipmentnumber_rs", "mars__revolveclothing_com___db.product"],
+                "expected_operations": ["JOIN", "GROUP BY", "SUM", "ORDER BY", "date filtering"],
+                "business_context": "Quarterly brand performance tracking",
+                "business_rules": ["Use shipmentnumber_rs for product data", "Use projnetsales_shipped metric"]
             },
             {
                 "category": "Regional Analysis",
-                "question": "Show sales by region for electronics",
-                "expected_tables": ["sales", "products"],
-                "expected_operations": ["JOIN", "GROUP BY", "SUM", "WHERE"],
-                "business_context": "Regional performance for electronics category"
+                "question": "Which shipping countries have the highest net sales for the current quarter?",
+                "expected_tables": ["bi_report.shipmentnumber_rs"],
+                "expected_operations": ["GROUP BY", "SUM", "ORDER BY", "date filtering"],
+                "business_context": "Geographic performance analysis",
+                "business_rules": ["Use shippingcountry field", "Current quarter filtering"]
             },
             {
-                "category": "Customer Analysis",
-                "question": "Which customers bought the most items?",
-                "expected_tables": ["sales", "customers"],
-                "expected_operations": ["JOIN", "GROUP BY", "SUM", "ORDER BY"],
-                "business_context": "Top customers by purchase volume"
+                "category": "Time Series Analysis",
+                "question": "Show monthly sales trends for the last 6 months using net sales",
+                "expected_tables": ["bi_report.ordernumber_rs"],
+                "expected_operations": ["GROUP BY", "SUM", "EXTRACT", "ORDER BY", "date filtering"],
+                "business_context": "Monthly sales trending analysis",
+                "business_rules": ["Use netsales from ordernumber_rs", "6 months date filtering"]
             },
             {
-                "category": "Product Pricing",
-                "question": "What is the average price of products by category?",
-                "expected_tables": ["products"],
-                "expected_operations": ["GROUP BY", "AVG"],
-                "business_context": "Category-wise pricing analysis"
+                "category": "Category Performance",
+                "question": "Compare average order value by product category for Revolve orders",
+                "expected_tables": ["bi_report.shipmentnumber_rs", "mars__revolveclothing_com___db.product", "mars__id.id_categorynames2"],
+                "expected_operations": ["JOIN", "GROUP BY", "AVG", "category mapping"],
+                "business_context": "Category-wise AOV comparison for business insights",
+                "business_rules": ["Use site <> 'F'", "Category mapping via product code", "Use shipmentnumber_rs for product analysis"]
             },
             {
-                "category": "Customer Growth",
-                "question": "How many customers registered this year?",
-                "expected_tables": ["customers"],
-                "expected_operations": ["COUNT", "WHERE", "date filtering"],
-                "business_context": "Customer acquisition tracking"
-            },
-            {
-                "category": "Sales Performance",
-                "question": "Which region has the highest total sales?",
-                "expected_tables": ["sales"],
-                "expected_operations": ["GROUP BY", "SUM", "ORDER BY"],
-                "business_context": "Regional sales performance comparison"
-            },
-            {
-                "category": "Complex Analysis",
-                "question": "Show monthly sales trends for the last 6 months",
-                "expected_tables": ["sales"],
-                "expected_operations": ["GROUP BY", "SUM", "date functions", "ORDER BY"],
-                "business_context": "Time-series analysis for sales trends"
-            },
-            {
-                "category": "Cross-Category Analysis",
-                "question": "Compare average order value between categories",
-                "expected_tables": ["sales", "products"],
-                "expected_operations": ["JOIN", "GROUP BY", "AVG", "calculation"],
-                "business_context": "Category performance comparison"
-            },
-            {
-                "category": "Customer Behavior",
-                "question": "Find customers who bought both apparel and electronics",
-                "expected_tables": ["sales", "products", "customers"],
-                "expected_operations": ["JOIN", "WHERE", "DISTINCT", "complex filtering"],
-                "business_context": "Cross-category customer analysis"
+                "category": "Customer Retention",
+                "question": "Find customers who made multiple purchases in the last year",
+                "expected_tables": ["bi_report.ordernumber_rs"],
+                "expected_operations": ["GROUP BY", "COUNT", "HAVING", "date filtering"],
+                "business_context": "Customer loyalty and retention analysis",
+                "business_rules": ["Count distinct transactions per customer", "12 month date filtering"]
             }
         ]
         
